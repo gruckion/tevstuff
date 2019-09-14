@@ -4,6 +4,12 @@ namespace App.Models
 
 	public class Customer
     {
+		// This is needed for the unit tests and the fluent builder
+		public Customer()
+		{
+
+		}
+
 		public Customer(
 			string firstname,
 			string surname,
@@ -11,12 +17,12 @@ namespace App.Models
 			string emailAddress,
 			Company company)
 		{
-			Id = (new Random()).Next(1, 10000); // TODO(Tevin): Change this to actually index users
-			this.Firstname = "";
-			this.Surname = "";
-			this.DateOfBirth = DateTime.Now;
-			this.EmailAddress = "";
-			this.Company = Company;
+			Id = (new Random()).Next(1, 10000); // TODO(Tevin): We should index users in the database
+			this.Firstname = firstname;
+			this.Surname = surname;
+			this.DateOfBirth = dateOfBirth;
+			this.EmailAddress = emailAddress;
+			this.Company = company;
 		}
 
         public int Id { get; set; }
@@ -25,7 +31,7 @@ namespace App.Models
 
         public string Surname { get; set; }
 
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         public string EmailAddress { get; set; }
 
@@ -35,19 +41,7 @@ namespace App.Models
 
         public Company Company { get; set; }
 
-		public int Age
-		{
-			get
-			{
-				var now = DateTime.Now;
-				int age = now.Year - DateOfBirth.Year;
-
-				if (now.Month < DateOfBirth.Month || (now.Month == DateOfBirth.Month && now.Day < DateOfBirth.Day))
-					age--;
-
-				return age;
-			}
-		}
+		public int Age { get; set; }
 
 	}
 }
