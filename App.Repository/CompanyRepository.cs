@@ -12,29 +12,16 @@
 			Company company = null;
 			var connectionString = ConfigurationManager.ConnectionStrings["appDatabase"].ConnectionString;
 
-			using (var connection = new SqlConnection(connectionString))
+			var reader = SqlHelper.Execute<SqlDataReader>("uspGetCompanyById", new SqlParameter("@CompanyId", SqlDbType.Int) { Value = id });
+
+			while (reader.Read())
 			{
-				var command = new SqlCommand
+				company = new Company
 				{
-					Connection = connection,
-					CommandType = CommandType.StoredProcedure,
-					CommandText = "uspGetCompanyById"
+					Id = int.Parse(reader["CompanyId"].ToString()),
+					Name = reader["Name"].ToString(),
+					Classification = (Classification)int.Parse(reader["ClassificationId"].ToString())
 				};
-
-				var parameter = new SqlParameter("@CompanyId", SqlDbType.Int) { Value = id };
-				command.Parameters.Add(parameter);
-
-				connection.Open();
-				var reader = command.ExecuteReader(CommandBehavior.CloseConnection);
-				while (reader.Read())
-				{
-					company = new Company
-					{
-						Id = int.Parse(reader["CompanyId"].ToString()),
-						Name = reader["Name"].ToString(),
-						Classification = (Classification)int.Parse(reader["ClassificationId"].ToString())
-					};
-				}
 			}
 
 			return company;

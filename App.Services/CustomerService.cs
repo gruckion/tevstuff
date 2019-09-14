@@ -76,11 +76,12 @@
 			return true;
 		}
 
+		// TODO(Tevin): Consider placing this logic somewhere else
 		public void calculateCustomerAge(Customer customer)
 		{
 			if (customer.DateOfBirth == null)
 			{
-				throw new Exception("Customer must have a date of birth");
+				throw new InvalidOperationException("Customer must have a date of birth");
 			}
 
 			var dateOfBirth = customer.DateOfBirth.Value;

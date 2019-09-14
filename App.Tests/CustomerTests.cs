@@ -41,7 +41,7 @@ namespace App.Tests
 			var customer = Builder<Customer>.CreateNew()
 				.With(c => c.DateOfBirth = null).Build();
 
-			Assert.ThrowsException<Exception>(
+			Assert.ThrowsException<InvalidOperationException>(
 				() => customerService.calculateCustomerAge(customer));
 		}
 

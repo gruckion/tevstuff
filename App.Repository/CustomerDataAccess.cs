@@ -1,13 +1,33 @@
 ﻿namespace App.Repository
 {
 	using App.Models;
-	using System.Configuration;
+    using System;
+    using System.Configuration;
 	using System.Data;
 	using System.Data.SqlClient;
 
 	public static class CustomerDataAccess
 	{
 		public static void AddCustomer(Customer customer)
+		{
+			var sqlParameters = new[]
+			{
+				new SqlParameter("@Firstname", SqlDbType.VarChar, 50) { Value = customer.Firstname },
+				new SqlParameter("@Surname", SqlDbType.VarChar, 50) { Value = customer.Surname },
+				new SqlParameter("@DateOfBirth", SqlDbType.DateTime) { Value = customer.DateOfBirth },
+				new SqlParameter("@EmailAddress", SqlDbType.VarChar, 50) { Value = customer.EmailAddress },
+				new SqlParameter("@HasCreditLimit", SqlDbType.Bit) { Value = customer.HasCreditLimit },
+				new SqlParameter("@CreditLimit", SqlDbType.Int) { Value = customer.CreditLimit },
+				new SqlParameter("@CompanyId", SqlDbType.Int) { Value = customer.Company.Id }
+			};
+
+			SqlHelper.Execute<int>("uspAddCustomer", sqlParameters);
+		}
+	}
+
+	public static class SqlHelper
+	{
+		public static T Execute<T>(string commandText, params SqlParameter[] sqlParameters)
 		{
 			var connectionString = ConfigurationManager.ConnectionStrings["appDatabase"].ConnectionString;
 
@@ -17,26 +37,22 @@
 				{
 					Connection = connection,
 					CommandType = CommandType.StoredProcedure,
-					CommandText = "uspAddCustomer"
+					CommandText = commandText
 				};
 
-				var firstNameParameter = new SqlParameter("@Firstname", SqlDbType.VarChar, 50) { Value = customer.Firstname };
-				command.Parameters.Add(firstNameParameter);
-				var surnameParameter = new SqlParameter("@Surname", SqlDbType.VarChar, 50) { Value = customer.Surname };
-				command.Parameters.Add(surnameParameter);
-				var dateOfBirthParameter = new SqlParameter("@DateOfBirth", SqlDbType.DateTime) { Value = customer.DateOfBirth };
-				command.Parameters.Add(dateOfBirthParameter);
-				var emailAddressParameter = new SqlParameter("@EmailAddress", SqlDbType.VarChar, 50) { Value = customer.EmailAddress };
-				command.Parameters.Add(emailAddressParameter);
-				var hasCreditLimitParameter = new SqlParameter("@HasCreditLimit", SqlDbType.Bit) { Value = customer.HasCreditLimit };
-				command.Parameters.Add(hasCreditLimitParameter);
-				var creditLimitParameter = new SqlParameter("@CreditLimit", SqlDbType.Int) { Value = customer.CreditLimit };
-				command.Parameters.Add(creditLimitParameter);
-				var companyIdParameter = new SqlParameter("@CompanyId", SqlDbType.Int) { Value = customer.Company.Id };
-				command.Parameters.Add(companyIdParameter);
+				command.Parameters.AddRange(sqlParameters);
 
 				connection.Open();
-				command.ExecuteNonQuery();
+
+				if (typeof(T).GetType() == typeof(SqlDataReader))
+				{
+					return (T) Convert.ChangeType(command.ExecuteReader(CommandBehavior.CloseConnection), typeof(T));
+				}
+				else
+				{
+					return (T)Convert.ChangeType(command.ExecuteNonQuery(), typeof(T));
+				}
+
 			}
 		}
 	}
